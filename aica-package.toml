@@ -12,10 +12,10 @@ type = "ros"
 image = "iron"
 
 [build.environment.aica.libraries]
-"@aica/foss/control-libraries" = "v7.2.0"
+"@aica/foss/control-libraries" = "v7.3.0"
 
 [build.environment.aica.ros]
-"@aica/foss/modulo" = "v3.2.0"
+"@aica/foss/modulo" = "v4.0.0"
 
 [build.environment.apt]
 # add any apt packages here, e.g.
