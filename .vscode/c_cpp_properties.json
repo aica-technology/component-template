@@ -1,0 +1,16 @@
+{
+    "configurations": [
+        {
+            "name": "AMD",
+            "includePath": [
+                "/opt/ros/iron/include/**",
+                "/home/ros2/ros2_ws/install/**",
+                "/home/ros2/ws/src/template_component_package/include"
+            ],
+            "cStandard": "c17",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+    "version": 4
+}

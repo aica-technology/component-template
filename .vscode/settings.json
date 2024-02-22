@@ -1,0 +1,12 @@
+{
+    "cmake.sourceDirectory": "/home/ros2/ws/src/template_component_package",
+    "C_Cpp.clang_format_style": "file:/home/ros2/.clang-format",
+    "python.analysis.typeCheckingMode": "basic",
+    "editor.rulers": [
+        120
+    ],
+    "editor.defaultFormatter": "ms-python.autopep8",
+    "autopep8.args": ["--max-line-length", "120", "--experimental"],
+    "pylint.args": ["--max-line-length", "120", "-d", "C0114", "-d",  "C0115", "-d", "C0116"],
+    "isort.args": ["-l", "120"]
+}
