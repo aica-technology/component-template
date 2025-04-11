@@ -23,18 +23,21 @@ Alternatively, you can also clone this repository locally and create a new repos
 git clone git@github.com:aica-technology/component-template.git my_component_package
 ```
 
-## Rename the template component package 
+## Initialize the template component package 
 
-This template repository uses the placeholder package name `template_component_package`. The first thing you should
-do is rename the package to a meaningful custom name. This can be accomplished using the included bash script
-[`rename_package.sh`](./rename_package.sh) (use `./rename_package.sh --help` for more information). For example:
+This template repository uses the placeholder package name `template_component_package` and includes 
+four different component types: C++ component, C++ lifecycle component, Python component, and Python lifecycle component.
+
+The first step is to rename the package to a meaningful custom name and remove any unnecessary component types. You can accomplish
+this by using the included bash script [`initialize_package.sh`](./initialize_package.sh) (run `./initialize_package.sh --help` 
+for more information). For example:
 
 ```bash
-./rename_package.sh my_custom_package [--dry-run]
+./initialize_package.sh [--dry-run]
 ```
 
-If you want to include a second ROS package within the AICA package, you will need to create a new package folder in `source`
-and add it in your `aica-package.toml` file under `[build.packages.name_of_new_package]` accordingly.
+If you want to include a second ROS package within the AICA package, create a new package folder in `source` and add it to your 
+`aica-package.toml` file under `[build.packages.name_of_new_package]` accordingly.
 
 ## Configure the package development environment
 
