@@ -3,6 +3,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # Constants and help message.
+NAME_BLACKLIST=("template_component_package" "include" "src" "test")
 OLD_NAME="template_component_package"
 HELP_MESSAGE="Usage: $0 [--dry-run]
 This script initializes the package by prompting you to choose which component variants to include:
@@ -64,10 +65,14 @@ prompt_nonempty() {
   while true; do
     read -p $'\e[3;36m'"${prompt_msg}"$'\e[0m ' input
     if [[ -n "${input}" ]]; then
-      echo "${input}"
-      return
+      if [[ "${NAME_BLACKLIST[*]}" =~ ${input} ]]; then
+        echo "Input cannot be ${input}. Please try again." >&2
+      else
+        echo "${input}"
+        return
+      fi
     else
-      echo "Input cannot be empty. Please try again."
+      echo "Input cannot be empty. Please try again." >&2
     fi
   done
 }
@@ -88,7 +93,8 @@ prompt_yesno() {
       echo "no"
       return
     else
-      echo "Invalid input. Please enter y or n. (Default is y)"
+      echo "Invalid input. Please enter y or n. (Default is y)" >&2
+      ans=""
     fi
   done
 }
@@ -169,6 +175,11 @@ else
   INCLUDE_CPP="no"
 fi
 
+if [[ "${INCLUDE_CPP}" == "no" && "${INCLUDE_PYTHON}" == "no" ]]; then
+  echo "ERROR: Choose at least one component type to initialize package. Aborting."
+  exit 1
+fi
+
 # Display the choices.
 echo
 echo "New Package Name        : ${NEW_PACKAGE_NAME}"
@@ -183,6 +194,11 @@ if [[ "${INCLUDE_CPP}" == "yes" ]]; then
   echo "  - C++ Component       : ${INCLUDE_CPP_COMPONENT}"
 fi
 echo
+
+if [[ "${DRY_RUN}" == true ]]; then
+  echo "=== THIS IS A DRY RUN! NO FILE OR FILESYSTEM CHANGES WILL BE MADE ==="
+  echo
+fi
 
 # Build list of files/directories to delete.
 FILES_TO_DELETE=()
@@ -223,8 +239,6 @@ if [[ "${INCLUDE_CPP}" == "no" ]]; then
     "source/${OLD_NAME}/src"
     "source/${OLD_NAME}/test/cpp_tests"
     "source/${OLD_NAME}/test/test_cpp_components.cpp"
-    "source/${OLD_NAME}/setup.cfg"
-    "source/${OLD_NAME}/requirements.txt"
     "source/${OLD_NAME}/component_descriptions/${OLD_NAME}_cpp_component.json"
     "source/${OLD_NAME}/component_descriptions/${OLD_NAME}_cpp_lifecycle_component.json"
   )
@@ -253,6 +267,7 @@ fi
 for path in "${FILES_TO_DELETE[@]}"; do
   delete_path "${SCRIPT_DIR}/${path}"
 done
+echo
 
 # --- Modify configuration files ---
 
@@ -283,34 +298,32 @@ if [[ -f "${FILE_TO_MODIFY}" && "${INCLUDE_PYTHON}" == "yes" ]]; then
     fi
   fi
 fi
+echo
 
 # For C++: update CMakeLists.txt only if not in dry-run mode.
 CMAKE_FILE="${SCRIPT_DIR}/source/${OLD_NAME}/CMakeLists.txt"
 if [[ -f "${CMAKE_FILE}" ]]; then
-  echo "Updating CMakeLists.txt: ${CMAKE_FILE}..."
+  echo "Updating CMakeLists.txt..."
   if [[ "${DRY_RUN}" == true ]]; then
     echo "Dry run: CMakeLists.txt would be updated (component registrations removed based on selection)."
   else
-    if [[ "${INCLUDE_CPP_COMPONENT}" == "no" ]]; then
-      echo "Removing standard C++ component registration..."
-      sed_inplace '/CPPComponent/d' "${CMAKE_FILE}"
-      sed_inplace '/cpp_component/d' "${CMAKE_FILE}"
-    fi
-    if [[ "${INCLUDE_CPP_LIFECYCLE}" == "no" ]]; then
-      echo "Removing C++ lifecycle component registration..."
-      sed_inplace '/CPPLifecycleComponent/d' "${CMAKE_FILE}"
-      sed_inplace '/cpp_lifecycle_component/d' "${CMAKE_FILE}"
-    fi
-    if [[ "${INCLUDE_CPP_COMPONENT}" == "no" && "${INCLUDE_CPP_LIFECYCLE}" == "no" ]]; then
-      sed_inplace '/### Register C++ Components ###/d' "${CMAKE_FILE}"
+    if [[ "${INCLUDE_CPP}" == "no" ]]; then
+      sed_inplace '/### Register C++ Components ###/,/###############################/d' "${CMAKE_FILE}"
+    else
+      if [[ "${INCLUDE_CPP_COMPONENT}" == "no" ]]; then
+        echo "Removing C++ component registration..."
+        sed_inplace '/CPPComponent/d' "${CMAKE_FILE}"
+        sed_inplace '/cpp_component/d' "${CMAKE_FILE}"
+      fi
+      if [[ "${INCLUDE_CPP_LIFECYCLE}" == "no" ]]; then
+        echo "Removing C++ lifecycle component registration..."
+        sed_inplace '/CPPLifecycleComponent/d' "${CMAKE_FILE}"
+        sed_inplace '/cpp_lifecycle_component/d' "${CMAKE_FILE}"
+      fi
     fi
   fi
 fi
-
-if [[ "${DRY_RUN}" == true ]]; then
-  echo "=== THIS IS A DRY RUN! NO FILE OR FILESYSTEM CHANGES WILL BE MADE ==="
-  echo
-fi
+echo
 
 # Summary of text replacement action.
 HYPHENATED_OLD="${OLD_NAME//_/-}"
@@ -351,14 +364,15 @@ while IFS= read -r -d '' path; do
     fi
   fi
 done < <(find "${SCRIPT_DIR}/source" -print0)
+echo
 
 # Rename directories in reverse order (deepest first).
 for (( idx=${#DIRS_TO_RENAME[@]}-1; idx>=0; idx-- )); do
   echo "Renaming directory:"
   rename_item "${DIRS_TO_RENAME[$idx]}"
 done
+echo
 
 if [[ "${DRY_RUN}" == true ]]; then
-  echo
   echo "=== THIS WAS A DRY RUN! NO CHANGES WERE MADE ==="
 fi
