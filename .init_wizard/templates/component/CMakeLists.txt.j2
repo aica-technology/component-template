@@ -51,7 +51,7 @@ install(TARGETS ${COMPONENTS}
         RUNTIME DESTINATION bin)
 {% endif %}
 
-install_aica_descriptions(./component_descriptions ${CMAKE_INSTALL_PREFIX}/component_descriptions)
+install_aica_descriptions(./extension_descriptions ${CMAKE_INSTALL_PREFIX}/extension_descriptions)
 
 {% if has_py_files -%}
 # install Python modules

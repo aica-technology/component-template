@@ -29,7 +29,7 @@ target_link_libraries(${PROJECT_NAME} ${control_libraries_LIBRARIES})
 
 pluginlib_export_plugin_description_file(controller_interface controller_plugins.xml)
 
-install_aica_descriptions(./controller_descriptions ${CMAKE_INSTALL_PREFIX}/controller_descriptions)
+install_aica_descriptions(./extension_descriptions ${CMAKE_INSTALL_PREFIX}/extension_descriptions)
 
 ament_auto_package()
 
